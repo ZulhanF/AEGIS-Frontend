@@ -42,14 +42,59 @@ export default defineConfig({
     // Code splitting configuration
     rollupOptions: {
       output: {
-        // Simplified chunking to avoid React duplication issues
-        manualChunks: {
-          // Let Vite handle React automatically - don't split it manually
-          // This prevents the "useLayoutEffect" error
-          
-          // Only split very large libraries that are lazy-loaded
-          'vendor-charts': ['recharts'],
-          'vendor-markdown': ['react-markdown', 'remark-gfm', 'react-syntax-highlighter'],
+        // More aggressive chunking to reduce initial bundle
+        manualChunks: (id) => {
+          if (id.includes('node_modules')) {
+            // React core - keep minimal
+            if (id.includes('react') && !id.includes('react-')) {
+              return 'vendor-react';
+            }
+            if (id.includes('react-dom')) {
+              return 'vendor-react';
+            }
+            if (id.includes('scheduler')) {
+              return 'vendor-react';
+            }
+            
+            // React Router - separate (only for authenticated pages)
+            if (id.includes('react-router')) {
+              return 'vendor-router';
+            }
+            
+            // Charts - lazy loaded
+            if (id.includes('recharts') || id.includes('d3-')) {
+              return 'vendor-charts';
+            }
+            
+            // Markdown - lazy loaded
+            if (id.includes('react-markdown') || id.includes('remark-') || 
+                id.includes('rehype-') || id.includes('react-syntax-highlighter')) {
+              return 'vendor-markdown';
+            }
+            
+            // Radix UI - split by usage
+            if (id.includes('@radix-ui')) {
+              return 'vendor-ui';
+            }
+            
+            // Framer Motion - animations
+            if (id.includes('framer-motion')) {
+              return 'vendor-animation';
+            }
+            
+            // Table
+            if (id.includes('@tanstack/react-table')) {
+              return 'vendor-table';
+            }
+            
+            // Icons
+            if (id.includes('lucide-react')) {
+              return 'vendor-icons';
+            }
+            
+            // Other small utilities
+            return 'vendor-utils';
+          }
         },
         // Generate unique names for chunks based on hash
         chunkFileNames: () => {
@@ -78,13 +123,19 @@ export default defineConfig({
     chunkSizeWarningLimit: 300, // Stricter limit for mobile
     // Source maps for production (disable for faster builds)
     sourcemap: false,
-    // CSS code splitting - inline small CSS
-    cssCodeSplit: true,
+    // CSS code splitting - disable to reduce requests
+    cssCodeSplit: false,
     // Inline small assets (reduced for mobile)
     assetsInlineLimit: 4096, // 4KB - smaller for mobile
-    // Optimize module preload
+    // Optimize module preload - only preload critical chunks
     modulePreload: {
-      polyfill: false, // Modern browsers don't need polyfill
+      polyfill: false,
+      resolveDependencies: (filename, deps, { hostId, hostType }) => {
+        // Only preload React and Router for initial page
+        return deps.filter(dep => {
+          return dep.includes('vendor-react') || dep.includes('vendor-router');
+        });
+      },
     },
     // Report compressed size
     reportCompressedSize: true,

@@ -17,11 +17,9 @@ import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
 import { Toaster } from "@/components/ui/sonner";
 import { AdminGuard } from "@/components/guards/AdminGuard";
 
-// Import login/register directly (not lazy) for faster first load
-import LoginPage from "@/pages/LoginPage";
-import RegisterPage from "@/pages/RegisterPage";
-
-// Lazy load other pages
+// Lazy load all pages including auth pages
+const LoginPage = lazy(() => import("@/pages/LoginPage"));
+const RegisterPage = lazy(() => import("@/pages/RegisterPage"));
 const ChatPage = lazy(() => import("@/pages/ChatPage"));
 const TicketPage = lazy(() => import("./pages/TicketPage"));
 const CreateTicketPage = lazy(() => import("./pages/CreateTicketPage"));
@@ -98,11 +96,12 @@ function App() {
     return <PageLoader />;
   }
 
-  // Page login dan regis jika belum login (no Suspense needed - already imported)
+  // Page login dan regis jika belum login
   if (!auth.user) {
     return (
       <>
         <Toaster />
+        <Suspense fallback={<PageLoader />}>
         <Routes>
           <Route
             path="/"
@@ -121,6 +120,7 @@ function App() {
             }
           />
         </Routes>
+        </Suspense>
       </>
     );
   }
