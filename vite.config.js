@@ -42,58 +42,23 @@ export default defineConfig({
     // Code splitting configuration
     rollupOptions: {
       output: {
-        // More aggressive chunking to reduce initial bundle
+        // Safe chunking strategy - avoid React duplication
         manualChunks: (id) => {
           if (id.includes('node_modules')) {
-            // React core - keep minimal
-            if (id.includes('react') && !id.includes('react-')) {
-              return 'vendor-react';
-            }
-            if (id.includes('react-dom')) {
-              return 'vendor-react';
-            }
-            if (id.includes('scheduler')) {
-              return 'vendor-react';
-            }
-            
-            // React Router - separate (only for authenticated pages)
-            if (id.includes('react-router')) {
-              return 'vendor-router';
-            }
-            
-            // Charts - lazy loaded
+            // Charts - lazy loaded, can be separate
             if (id.includes('recharts') || id.includes('d3-')) {
               return 'vendor-charts';
             }
             
-            // Markdown - lazy loaded
+            // Markdown - lazy loaded, can be separate
             if (id.includes('react-markdown') || id.includes('remark-') || 
-                id.includes('rehype-') || id.includes('react-syntax-highlighter')) {
+                id.includes('rehype-') || id.includes('react-syntax-highlighter') ||
+                id.includes('refractor') || id.includes('prismjs')) {
               return 'vendor-markdown';
             }
             
-            // Radix UI - split by usage
-            if (id.includes('@radix-ui')) {
-              return 'vendor-ui';
-            }
-            
-            // Framer Motion - animations
-            if (id.includes('framer-motion')) {
-              return 'vendor-animation';
-            }
-            
-            // Table
-            if (id.includes('@tanstack/react-table')) {
-              return 'vendor-table';
-            }
-            
-            // Icons
-            if (id.includes('lucide-react')) {
-              return 'vendor-icons';
-            }
-            
-            // Other small utilities
-            return 'vendor-utils';
+            // Let Vite auto-chunk everything else to prevent React duplication
+            // This includes React, ReactDOM, Router, Radix, etc.
           }
         },
         // Generate unique names for chunks based on hash
@@ -127,13 +92,13 @@ export default defineConfig({
     cssCodeSplit: false,
     // Inline small assets (reduced for mobile)
     assetsInlineLimit: 4096, // 4KB - smaller for mobile
-    // Optimize module preload - only preload critical chunks
+    // Optimize module preload - defer non-critical chunks
     modulePreload: {
       polyfill: false,
-      resolveDependencies: (filename, deps, { hostId, hostType }) => {
-        // Only preload React and Router for initial page
+      resolveDependencies: (filename, deps) => {
+        // Filter out charts and markdown from initial preload
         return deps.filter(dep => {
-          return dep.includes('vendor-react') || dep.includes('vendor-router');
+          return !dep.includes('vendor-charts') && !dep.includes('vendor-markdown');
         });
       },
     },
