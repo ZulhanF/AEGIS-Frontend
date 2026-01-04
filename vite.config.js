@@ -65,11 +65,13 @@ export default defineConfig({
           return 'assets/[name]-[hash].[ext]';
         },
       },
-      // Optimize treeshaking
+      // Optimize treeshaking - more aggressive
       treeshake: {
         moduleSideEffects: false,
         propertyReadSideEffects: false,
         tryCatchDeoptimization: false,
+        preset: 'smallest', // Most aggressive tree-shaking
+        manualPureFunctions: ['console.log', 'console.info', 'console.debug'],
       },
     },
     // Chunk size warnings - more aggressive for mobile

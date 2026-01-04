@@ -45,21 +45,10 @@ function App() {
   const navigate = useNavigate();
   const location = useLocation();
   
-  // Defer non-critical hooks to reduce TBT
-  const [deferredLoad, setDeferredLoad] = React.useState(false);
   const tickets = useTickets();
   const machines = useMachine();
   const status = useStatus();
   const users = useUsers();
-  
-  // Defer keyboard shortcuts to idle time
-  React.useEffect(() => {
-    if ('requestIdleCallback' in window) {
-      requestIdleCallback(() => setDeferredLoad(true));
-    } else {
-      setTimeout(() => setDeferredLoad(true), 100);
-    }
-  }, []);
   
   // Enable global keyboard shortcuts after initial render
   useKeyboardShortcuts();
