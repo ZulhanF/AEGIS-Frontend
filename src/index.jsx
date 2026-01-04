@@ -14,6 +14,8 @@ createRoot(document.getElementById('root')).render(
 )
 
 // Defer Web Vitals to reduce TBT (Total Blocking Time)
+// Disabled in production to reduce bundle size
+/*
 if (import.meta.env.PROD) {
   // Delay initialization until after first paint
   if ('requestIdleCallback' in window) {
@@ -22,3 +24,4 @@ if (import.meta.env.PROD) {
     setTimeout(() => initWebVitals(), 1000);
   }
 }
+*/

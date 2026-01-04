@@ -42,33 +42,11 @@ export default defineConfig({
     // Code splitting configuration
     rollupOptions: {
       output: {
-        // Safe chunking strategy - avoid React duplication
-        manualChunks: (id) => {
-          if (id.includes('node_modules')) {
-            // Charts - lazy loaded, can be separate
-            if (id.includes('recharts') || id.includes('d3-')) {
-              return 'vendor-charts';
-            }
-            
-            // Markdown - lazy loaded, can be separate
-            if (id.includes('react-markdown') || id.includes('remark-') || 
-                id.includes('rehype-') || id.includes('react-syntax-highlighter') ||
-                id.includes('refractor') || id.includes('prismjs')) {
-              return 'vendor-markdown';
-            }
-            
-            // Let Vite auto-chunk everything else to prevent React duplication
-            // This includes React, ReactDOM, Router, Radix, etc.
-          }
-        },
-        // Generate unique names for chunks based on hash
-        chunkFileNames: () => {
-          // Use shorter names for better caching
-          return 'assets/[name]-[hash].js';
-        },
+        // Let Vite auto-optimize chunks - simpler and more reliable
+        // Manual chunking can cause issues with lazy loading
+        chunkFileNames: 'assets/[name]-[hash].js',
         entryFileNames: 'assets/[name]-[hash].js',
         assetFileNames: (assetInfo) => {
-          // Separate CSS files
           if (assetInfo.name?.endsWith('.css')) {
             return 'assets/[name]-[hash].css';
           }
@@ -111,14 +89,14 @@ export default defineConfig({
       'react',
       'react-dom',
       'react-router-dom',
-      'lucide-react',
     ],
     exclude: [
+      'recharts',
+      'react-markdown',
+      'react-syntax-highlighter',
+      'remark-gfm',
+      'framer-motion',
       '@tanstack/react-table',
-      'framer-motion', // Exclude from initial load - only used in authenticated pages
-      'recharts', // Defer charts
-      'react-markdown', // Defer markdown
-      'react-syntax-highlighter', // Defer syntax highlighter
     ],
   },
   server: {
