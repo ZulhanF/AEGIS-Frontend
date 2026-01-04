@@ -42,51 +42,14 @@ export default defineConfig({
     // Code splitting configuration
     rollupOptions: {
       output: {
-        // Optimized chunking - balance between bundle size and HTTP requests
-        manualChunks: (id) => {
-          if (id.includes('node_modules')) {
-            // React ecosystem - MUST stay together to avoid duplication
-            if (id.includes('/react/') || id.includes('/react-dom/') || 
-                id.includes('/react-router') || id.includes('/scheduler/') || 
-                id.includes('/react-is/')) {
-              return 'react-vendor';
-            }
-            
-            // Radix UI (keep all together - used throughout the app)
-            if (id.includes('@radix-ui')) {
-              return 'ui-vendor';
-            }
-            
-            // Charts (large, lazy loaded)
-            if (id.includes('recharts') || id.includes('d3-')) {
-              return 'charts-vendor';
-            }
-            
-            // Markdown & Syntax highlighting (large, lazy loaded in chat)
-            if (id.includes('react-markdown') || id.includes('remark-') || 
-                id.includes('rehype-') || id.includes('react-syntax-highlighter') || 
-                id.includes('refractor') || id.includes('prismjs')) {
-              return 'markdown-vendor';
-            }
-            
-            // Framer Motion (large, used for animations)
-            if (id.includes('framer-motion')) {
-              return 'animation-vendor';
-            }
-            
-            // Table library (large, used in tickets)
-            if (id.includes('@tanstack/react-table')) {
-              return 'table-vendor';
-            }
-            
-            // Icons (medium, used everywhere)
-            if (id.includes('lucide-react') || id.includes('tabler-icons')) {
-              return 'icons-vendor';
-            }
-            
-            // All other vendor code together
-            return 'vendor';
-          }
+        // Simplified chunking to avoid React duplication issues
+        manualChunks: {
+          // Let Vite handle React automatically - don't split it manually
+          // This prevents the "useLayoutEffect" error
+          
+          // Only split very large libraries that are lazy-loaded
+          'vendor-charts': ['recharts'],
+          'vendor-markdown': ['react-markdown', 'remark-gfm', 'react-syntax-highlighter'],
         },
         // Generate unique names for chunks based on hash
         chunkFileNames: () => {
